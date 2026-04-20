@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Comparison Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .product-name {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .price-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .price-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .price-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .price-card.cheapest {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+        
+        .site-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .price-card.cheapest .price {
+            color: #27ae60;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .view-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .view-link:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Price Comparison Tool</h1>
+        <p class="subtitle">Find the best deal across Amazon, Flipkart, and eBay</p>
+        
+        <div class="search-box">
+            <input type="text" id="productInput" placeholder="Search for a product..." />
+            <button onclick="searchProduct()">Search</button>
+        </div>
+        
+        <div class="error" id="errorMsg"></div>
+        <div class="loading" id="loadingMsg">Searching for prices...</div>
+        
+        <div class="results" id="results">
+            <div class="product-name">Results for: <span id="productName"></span></div>
+            <div class="price-cards" id="priceCards"></div>
+        </div>
+    </div>
+    
+    <script>
+        function searchProduct() {
+            const productInput = document.getElementById('productInput');
+            const product = productInput.value.trim();
+            
+            if (!product) {
+                showError('Please enter a product name');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            hideResults();
+            
+            fetch(`/api/search/product?q=${encodeURIComponent(product)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Search failed');
+                    return response.json();
+                })
+                .then(data => {
+                    displayResults(data.product);
+                    showLoading(false);
+                })
+                .catch(error => {
+                    showError('Error searching for product: ' + error.message);
+                    showLoading(false);
+                });
+        }
+        
+        function displayResults(product) {
+            document.getElementById('productName').textContent = product.name;
+            
+            const priceCards = document.getElementById('priceCards');
+            priceCards.innerHTML = '';
+            
+            const sites = ['amazon', 'flipkart', 'ebay'];
+            
+            sites.forEach(site => {
+                const siteData = product[site];
+                const isCheapest = product.cheapest && product.cheapest.site === site;
+                
+                const card = document.createElement('div');
+                card.className = `price-card ${isCheapest ? 'cheapest' : ''}`;
+                
+                const priceHtml = siteData.price 
+                    ? `<div class="price">₹${siteData.price.toLocaleString('en-IN')}</div>`
+                    : '<div class="price">N/A</div>';
+                
+                const badgeHtml = isCheapest ? '<div class="badge">Best Price!</div>' : '';
+                
+                const linkHtml = siteData.url
+                    ? `<a href="${siteData.url}" target="_blank" class="view-link">View on ${site}</a>`
+                    : '';
+                
+                card.innerHTML = `
+                    <div class="site-name">${site.charAt(0).toUpperCase() + site.slice(1)}</div>
+                    ${badgeHtml}
+                    ${priceHtml}
+                    ${linkHtml}
+                `;
+                
+                priceCards.appendChild(card);
+            });
+            
+            document.getElementById('results').classList.add('show');
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        function hideError() {
+            document.getElementById('errorMsg').classList.remove('show');
+        }
+        
+        function hideResults() {
+            document.getElementById('results').classList.remove('show');
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loadingMsg').classList.toggle('show', show);
+        }
+        
+        // Allow Enter key to search
+        document.getElementById('productInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchProduct();
+        });
+    </script>
+</body>
+</html>
