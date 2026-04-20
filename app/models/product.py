@@ -35,7 +35,7 @@ class Product(db.Model):
                 'price': self.flipkart_price,
                 'url': self.flipkart_url
             },
-            'ebay': {
+            'meesho': {
                 'price': self.ebay_price,
                 'url': self.ebay_url
             },
@@ -48,7 +48,7 @@ class Product(db.Model):
         prices = {
             'amazon': self.amazon_price,
             'flipkart': self.flipkart_price,
-            'ebay': self.ebay_price
+            'meesho': self.ebay_price
         }
         prices = {k: v for k, v in prices.items() if v is not None}
         

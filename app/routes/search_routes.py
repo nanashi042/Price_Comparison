@@ -2,7 +2,7 @@ from flask import request, jsonify
 from app.routes import search_bp
 from app import db
 from app.models import Product, PriceRecord, SearchHistory
-from app.scrapers import AmazonScraper, FlipkartScraper, EbayScraper
+from app.scrapers import AmazonScraper, FlipkartScraper, MeeshoScraper
 from urllib.parse import urlparse, unquote
 import re
 
@@ -10,6 +10,9 @@ import re
 def normalize_search_query(raw_query):
     """Convert pasted product URLs into a clean search query."""
     query = raw_query.strip()
+    if query and not re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*://', query) and re.match(r'^(www\.)?(amazon|flipkart|meesho)\.', query, flags=re.I):
+        query = f'https://{query}'
+
     parsed = urlparse(query)
 
     if parsed.scheme in ('http', 'https') and parsed.netloc:
@@ -35,8 +38,8 @@ def normalize_search_query(raw_query):
             source_site = 'amazon'
         elif 'flipkart.' in netloc:
             source_site = 'flipkart'
-        elif 'ebay.' in netloc:
-            source_site = 'ebay'
+        elif 'meesho.' in netloc:
+            source_site = 'meesho'
 
         return {
             'query': cleaned or query,
@@ -85,6 +88,11 @@ def search_product():
             source_site=normalized['source_site'],
             source_url=normalized['source_url']
         )
+
+        source_site = normalized['source_site']
+        source_result = results.get(source_site) if source_site else None
+        if source_result and source_result.get('name'):
+            product.name = source_result['name']
         
         search_record.results_count = sum(1 for r in results.values() if r.get('price'))
         db.session.add(search_record)
@@ -109,7 +117,7 @@ def perform_scraping(product, product_name, source_site=None, source_url=None):
     scrapers = {
         'amazon': AmazonScraper(),
         'flipkart': FlipkartScraper(),
-        'ebay': EbayScraper()
+        'meesho': MeeshoScraper()
     }
     
     # Scrape each site
@@ -126,13 +134,15 @@ def perform_scraping(product, product_name, source_site=None, source_url=None):
             result['url'] = source_url
 
         results[site_key] = result
+
+        storage_key = 'ebay' if site_key == 'meesho' else site_key
         
         # Update product record
         if result.get('url'):
-            setattr(product, f'{site_key}_url', result['url'])
+            setattr(product, f'{storage_key}_url', result['url'])
 
         if result.get('price') is not None:
-            setattr(product, f'{site_key}_price', result['price'])
+            setattr(product, f'{storage_key}_price', result['price'])
             
             # Also save to price records for history
             price_record = PriceRecord(

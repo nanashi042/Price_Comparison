@@ -18,7 +18,13 @@ class BaseScraper(ABC):
         """
         Fetch HTML content from URL with retries
         """
-        headers = {'User-Agent': get_random_user_agent()}
+        headers = {
+            'User-Agent': get_random_user_agent(),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-IN,en;q=0.9',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        }
         
         for attempt in range(self.max_retries):
             try:

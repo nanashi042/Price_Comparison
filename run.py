@@ -19,4 +19,4 @@ if __name__ == '__main__':
     
     # Run the Flask application
     debug = config_name == 'development'
-    app.run(debug=debug, host='0.0.0.0', port=5000)
+    app.run(debug=debug, host='0.0.0.0', port=5001)

@@ -4,206 +4,433 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Price Comparison Tool</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="shortcut icon" href="/static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #060708;
+            --panel: rgba(20, 22, 26, 0.72);
+            --panel-stroke: rgba(255, 255, 255, 0.11);
+            --muted: #9da4b0;
+            --text: #f2f4f8;
+            --accent: #fafafa;
+            --success: #5ee6a8;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Sora', sans-serif;
+            background:
+                radial-gradient(circle at 8% 10%, rgba(87, 104, 133, 0.25), transparent 30%),
+                radial-gradient(circle at 80% 3%, rgba(120, 120, 120, 0.18), transparent 35%),
+                linear-gradient(180deg, #060708 0%, #020203 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            color: var(--text);
+            overflow-x: hidden;
         }
-        
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.06) 0.6px, transparent 0.6px);
+            background-size: 2px 2px;
+            opacity: 0.06;
+            z-index: 0;
+        }
+
         .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            max-width: 800px;
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
             width: 100%;
-            padding: 40px;
+            margin: 0 auto;
+            padding: 26px 22px 36px;
         }
-        
-        h1 {
+
+        .top-nav {
+            width: fit-content;
+            margin: 0 auto 26px;
+            padding: 6px;
+            border-radius: 999px;
+            border: 1px solid var(--panel-stroke);
+            background: rgba(19, 21, 25, 0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            gap: 6px;
+            animation: fadeSlide 600ms ease forwards;
+        }
+
+        .top-nav button {
+            border: 0;
+            color: #d6dce6;
+            background: transparent;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 8px 14px;
+            cursor: pointer;
+        }
+
+        .top-nav button.cta {
+            background: #f4f6fa;
+            color: #11151c;
+        }
+
+        .hero {
             text-align: center;
-            color: #333;
+            margin-bottom: 28px;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(54px, 13vw, 150px);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            color: #f6f7fb;
+            text-shadow: 0 14px 42px rgba(255, 255, 255, 0.2);
             margin-bottom: 10px;
+            animation: revealTitle 700ms ease forwards;
         }
-        
+
         .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
+            color: var(--muted);
             font-size: 14px;
+            letter-spacing: 0.02em;
         }
-        
+
         .search-box {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin: 0 auto 30px;
+            max-width: 800px;
+            padding: 10px;
+            background: rgba(16, 18, 22, 0.84);
+            border: 1px solid var(--panel-stroke);
+            border-radius: 16px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
         }
-        
+
         input[type="text"] {
             flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 14px;
+            color: #e8edf7;
+            background: rgba(8, 10, 13, 0.9);
+            transition: border-color 220ms, box-shadow 220ms;
         }
-        
+
+        input[type="text"]::placeholder {
+            color: #727b89;
+        }
+
         input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: rgba(255, 255, 255, 0.24);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
         }
-        
+
         button {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            padding: 12px 26px;
+            background: linear-gradient(180deg, #f7f8fb 0%, #cfd5df 100%);
+            color: #11151b;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 180ms, box-shadow 180ms;
         }
-        
+
         button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(255, 255, 255, 0.15);
         }
-        
+
         button:active {
             transform: translateY(0);
         }
-        
+
         .results {
             display: none;
         }
-        
+
         .results.show {
             display: block;
+            animation: fadeSlide 480ms ease;
         }
-        
+
         .product-name {
-            font-size: 24px;
-            color: #333;
+            font-size: 20px;
+            text-align: center;
             margin-bottom: 20px;
+            color: #edf1f8;
         }
-        
+
+        .product-name span {
+            color: #f9fbff;
+            font-weight: 700;
+        }
+
         .price-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 20px;
+        }
+
+        .price-card {
+            position: relative;
+            border: 1px solid var(--panel-stroke);
+            border-radius: 20px;
+            padding: 22px;
+            background: linear-gradient(180deg, rgba(39, 44, 52, 0.35) 0%, rgba(10, 12, 15, 0.78) 100%);
+            backdrop-filter: blur(18px);
+            min-height: 340px;
+            overflow: hidden;
+            transition: transform 230ms, border-color 230ms;
+            animation: fadeUp 450ms ease both;
+        }
+
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: -90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 170px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.28);
+            filter: blur(34px);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .price-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.24);
+        }
+
+        .price-card.cheapest {
+            border-color: rgba(94, 230, 168, 0.7);
+            box-shadow: 0 16px 36px rgba(72, 194, 138, 0.16);
+        }
+
+        .site-name {
+            position: relative;
+            z-index: 1;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #b2b9c6;
+            margin-bottom: 16px;
+        }
+
+        .price {
+            position: relative;
+            z-index: 1;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(34px, 5vw, 54px);
+            line-height: 0.95;
+            color: #f4f7fe;
+            margin-bottom: 16px;
+            letter-spacing: -0.03em;
+            font-weight: 700;
+        }
+
+        .price-card.cheapest .price {
+            color: var(--success);
+        }
+
+        .badge {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(80, 232, 163, 0.2);
+            color: #8ff1bf;
+            border: 1px solid rgba(80, 232, 163, 0.55);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            margin-bottom: 14px;
+        }
+
+        .features {
+            position: relative;
+            z-index: 1;
+            margin-top: 6px;
+            list-style: none;
+            display: grid;
+            gap: 8px;
+            color: #c0c6d2;
+            font-size: 12px;
+            text-align: left;
             margin-bottom: 20px;
         }
-        
-        .price-card {
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s;
+
+        .features li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        .price-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+
+        .features li::before {
+            content: '✓';
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            color: #f4f8ff;
+            background: rgba(255, 255, 255, 0.1);
         }
-        
-        .price-card.cheapest {
-            border-color: #27ae60;
-            background: #f0fff4;
-        }
-        
-        .site-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .price {
-            font-size: 32px;
-            color: #667eea;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        
-        .price-card.cheapest .price {
-            color: #27ae60;
-        }
-        
-        .badge {
-            display: inline-block;
-            background: #27ae60;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
-        
+
         .view-link {
+            position: relative;
+            z-index: 1;
             display: inline-block;
-            color: #667eea;
+            color: #f6f8fc;
             text-decoration: none;
-            margin-top: 10px;
-            font-size: 14px;
+            margin-top: auto;
+            padding: 11px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(8, 9, 12, 0.6);
         }
-        
+
         .view-link:hover {
-            text-decoration: underline;
+            border-color: rgba(255, 255, 255, 0.44);
         }
-        
+
         .loading {
             text-align: center;
-            color: #667eea;
+            color: #d8dce5;
             display: none;
+            margin-bottom: 14px;
         }
-        
+
         .loading.show {
             display: block;
         }
-        
+
         .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 5px;
+            background: rgba(161, 48, 64, 0.16);
+            color: #ffc7d0;
+            border: 1px solid rgba(255, 170, 183, 0.4);
+            padding: 14px;
+            border-radius: 12px;
             margin-bottom: 20px;
             display: none;
         }
-        
+
         .error.show {
             display: block;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #767f8d;
+            margin-top: 26px;
+            font-size: 12px;
+        }
+
+        @keyframes revealTitle {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 760px) {
+            .search-box {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .price-card {
+                min-height: 280px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="noise"></div>
     <div class="container">
-        <h1>🛒 Price Comparison Tool</h1>
-        <p class="subtitle">Find the best deal across Amazon, Flipkart, and eBay</p>
-        
+        <nav class="top-nav" aria-label="Quick navigation">
+            <button type="button">Home</button>
+            <button type="button">Pricing</button>
+            <button type="button">FAQ</button>
+            <button type="button">Contact</button>
+            <button type="button" class="cta">Download</button>
+        </nav>
+
+        <section class="hero">
+            <h1>Pricing</h1>
+            <p class="subtitle">Track product prices across marketplaces with a cinematic, real-time dashboard.</p>
+        </section>
+
         <div class="search-box">
-            <input type="text" id="productInput" placeholder="Search for a product..." />
+            <input type="text" id="productInput" placeholder="Paste a product link or type a product name" />
             <button onclick="searchProduct()">Search</button>
         </div>
-        
+
         <div class="error" id="errorMsg"></div>
         <div class="loading" id="loadingMsg">Searching for prices...</div>
-        
+
         <div class="results" id="results">
             <div class="product-name">Results for: <span id="productName"></span></div>
             <div class="price-cards" id="priceCards"></div>
         </div>
+
+        <p class="footer-note">Built for fast product checks across Amazon, Flipkart, and Meesho.</p>
     </div>
-    
+
     <script>
         function searchProduct() {
             const productInput = document.getElementById('productInput');
@@ -239,56 +466,63 @@
             const priceCards = document.getElementById('priceCards');
             priceCards.innerHTML = '';
             
-            const sites = ['amazon', 'flipkart', 'ebay'];
+            const sites = ['amazon', 'flipkart', 'meesho'];
             
             sites.forEach(site => {
                 const siteData = product[site];
                 const isCheapest = product.cheapest && product.cheapest.site === site;
-                
+
                 const card = document.createElement('div');
                 card.className = `price-card ${isCheapest ? 'cheapest' : ''}`;
-                
+
                 const priceHtml = siteData.price 
                     ? `<div class="price">₹${siteData.price.toLocaleString('en-IN')}</div>`
                     : '<div class="price">N/A</div>';
-                
+
                 const badgeHtml = isCheapest ? '<div class="badge">Best Price!</div>' : '';
-                
+                const featureItems = [
+                    siteData.price ? `Latest tracked price available` : `Price currently unavailable`,
+                    siteData.url ? `Direct product link available` : `No reliable listing link found`,
+                    isCheapest ? `Cheapest among tracked stores` : `Comparable market option`
+                ];
+                const featuresHtml = `<ul class="features">${featureItems.map(item => `<li>${item}</li>`).join('')}</ul>`;
+
                 const linkHtml = siteData.url
-                    ? `<a href="${siteData.url}" target="_blank" class="view-link">View on ${site}</a>`
-                    : '';
-                
+                    ? `<a href="${siteData.url}" target="_blank" rel="noopener noreferrer" class="view-link">Open on ${site}</a>`
+                    : '<span class="view-link" style="opacity:0.45; pointer-events:none;">Link unavailable</span>';
+
                 card.innerHTML = `
                     <div class="site-name">${site.charAt(0).toUpperCase() + site.slice(1)}</div>
                     ${badgeHtml}
                     ${priceHtml}
+                    ${featuresHtml}
                     ${linkHtml}
                 `;
-                
+
                 priceCards.appendChild(card);
             });
-            
+
             document.getElementById('results').classList.add('show');
         }
-        
+
         function showError(message) {
             const errorDiv = document.getElementById('errorMsg');
             errorDiv.textContent = message;
             errorDiv.classList.add('show');
         }
-        
+
         function hideError() {
             document.getElementById('errorMsg').classList.remove('show');
         }
-        
+
         function hideResults() {
             document.getElementById('results').classList.remove('show');
         }
-        
+
         function showLoading(show) {
             document.getElementById('loadingMsg').classList.toggle('show', show);
         }
-        
+
         // Allow Enter key to search
         document.getElementById('productInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchProduct();
